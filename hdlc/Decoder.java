@@ -32,12 +32,8 @@ avec le CRC
     public string bitDeStuffing(string frame){
         /*
         Le but est de vérifier s'il y a des bits de stuffing dans la tramme 
-        reçue et les retirer pour retourner la tramme sans bit Stuffing. Étant 
-        donné que les champs Type, Num et CRC sont de 1-2 octets et que 
-        Données est composé de caractères unicode ou ASCII, une tramme sans bit 
-        stuffing a un nombre de bits qui est un multiple de 8. Si n est le 
-        nombre de bits dans la tramme, n % 8 nous donne le nombre de bits à 
-        retirer.
+        reçue et les retirer pour retourner la tramme sans bit Stuffing. Si 5 
+        bits à 1 consécutifs apparaissent, le bit 0 suivant est à retirer
         */
         
         //TODO: Retirer le bit stuffing ici

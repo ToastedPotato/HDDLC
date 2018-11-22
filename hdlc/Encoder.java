@@ -32,9 +32,10 @@ Permet le calcul du CRC et du bit stuffing sur une tramme
     public string bitStuffing(string frame){
         /*
         Le but est de rendre impossible l'occurrence de caractères "~" 
-        (01111110) dans la tramme. Ex: insérer un 0 entre le 5e et 6e 1 d'une 
-        chaîne de 6 bits 1 consécutifs
+        (01111110) dans la tramme. Essentiellment insérer un 0 après chaque 
+        suite de 5 bits à 1
         */
+        
         string stuffedFrame = "";
         
         //TODO: Appliquer le bit stuffing ici

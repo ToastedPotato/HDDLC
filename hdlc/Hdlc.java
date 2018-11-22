@@ -16,7 +16,7 @@ public class Hdlc
                 System.out.println(errorMsg);
             }else{
                 /*
-                Créer un Énetteur, lui faire lire les données du fichier et lui 
+                Créer un Émetteur, lui faire lire les données du fichier et lui 
                 faire exécuter les boucles d'envoi de trammes et de traitements 
                 d'accusés de réception/messages d'erreurs
                 */
