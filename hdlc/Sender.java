@@ -1,3 +1,4 @@
+package hdlc;
 
 public class Sender
 {
@@ -13,9 +14,7 @@ gérer les réponses du récepteur
     private int windowSize;
     
     //Les données extraites du fichier
-    private string fileData;
-    
-    
+    private string fileData;    
     
     private static final int polynome = (1<<16)+(1<<12)+(1<<5)+1;
     

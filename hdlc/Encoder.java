@@ -1,3 +1,5 @@
+package hdlc;
+
 public class Encoder
 {
 /*
@@ -18,11 +20,11 @@ Permet le calcul du CRC et du bit stuffing sur une tramme
         Données du message. Retourne un string contenant Type, Num, Données et
         CRC
         */
-        string CRC = "";
+        string crc = "";
         
         //TODO: faire le calcul du CRC ici
         
-        return data+CRC;
+        return data+crc;
     
     }
     
