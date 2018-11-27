@@ -13,21 +13,9 @@ avec le CRC
         this.polynome = p;    
     }
     
-    //Vérifie la présence d'erreurs dans la tramme à l'aide du polynôme
-    public String checkCRC(String frame){
-        /*
-        diviser la chaîne de bits obtenue à partir des éléments Type, Num, 
-        Données et CRC de la tramme. Retourne le reste de cette division. Un 
-        reste = 0 indique aucune erreur, sinon il y a une erreur. La méthode 
-        assume que la trame est founie sans les charactères flags
-        */
-        String data = frame;
-        String remainder = "";
-        //String p = "10001000000100001";
-        
-        
-        //TODO: faire la vérification du CRC ici
-        byte[] byteArray = data.getBytes();
+    private String convertToBits(String s){
+        //conversion de la chaîne de charactères en une chaîne de 0 et de 1 
+        byte[] byteArray = s.getBytes();
         StringBuilder bitChain = new StringBuilder();
         for (byte b : byteArray)
         {
@@ -39,24 +27,63 @@ avec le CRC
              }
         }
         
-        //la division
-        int x = 0;                
-        for(int i = 0; i < data.length(); i++){
+        return bitChain.toString();
+    
+    }
+    
+    //conversion d'une chaîne de bits en chaîne de charactères
+    private String convertToChars(String bits){
+        
+        int x = 0;
+        StringBuilder chars = new StringBuilder();                
+        for(int i = 1; i <= bits.length(); i++){
             
-            if(x <= 65535){
-            //on lit 1 à 1 les bits de la trame jusqu'à avoir un nombre assez 
-            //grand pour le XOR
-                if(bitChain.charAt(i) == 0){
-                    x = x*2;
-                }else{x = (x*2) + 1;}
-            }else{ x = x^this.polynome;}
+            if(i % 8 == 0){
+                //on convertit le nombre x sur 8 bits en un charactère
+                chars.append((char) x);
+                x = 0;
+            }
+                        
+            //on lit 1 par 1 les bits jusqu'à en avoir 8
+            if(bits.charAt(i-1) == '0'){
+                x = x<<1;
+            }else{x = (x<<1) + 1;}            
         
         }
         
-        //conversion du reste en char
-        remainder = ((char) (x>>8)) + "" + ((char) (x & 255));
+        return chars.toString();
+    }
+    
+    //Vérifie la présence d'erreurs dans la tramme à l'aide du polynôme
+    public int checkCRC(String frame){
+        /*
+        diviser la chaîne de bits obtenue à partir des éléments Type, Num, 
+        Données et CRC de la tramme. Retourne le reste de cette division. Un 
+        reste = 0 indique aucune erreur, sinon il y a une erreur. La méthode 
+        assume que la trame est fournie sans les charactères flags
+        */
+        String data = frame;
         
-        return remainder;
+        //TODO: faire la vérification du CRC ici
+        
+        //conversion de la trame en une chaîne de 0 et de 1        
+        String bits = this.convertToBits(data);
+        
+        //la division
+        int x = 0;                
+        for(int i = 0; i < bits.length(); i++){
+            
+            if(x <= 65535){
+            //on lit 1 par 1 les bits de la trame jusqu'à avoir un nombre assez 
+            //grand pour le XOR
+                if(bits.charAt(i) == '0'){
+                    x = x<<1;
+                }else{x = (x<<1) + 1;}
+            }else{ x = x^this.polynome;}
+        
+        }
+                
+        return x;
     
     }
     
@@ -65,15 +92,27 @@ avec le CRC
         /*
         Le but est de vérifier s'il y a des bits de stuffing dans la tramme 
         reçue et les retirer pour retourner la tramme sans bit Stuffing. Si 5 
-        bits à 1 consécutifs apparaissent, le bit 0 suivant est à retirer
+        bits à 1 consécutifs apparaissent, le bit 0 suivant est à retirer. On 
+        assume que la frame est fournie sans les flags
         */
-        
-        String destuffedFrame = "";
-        
+                
         //TODO: Retirer le bit stuffing ici
-               
+        String bits = this.convertToBits(frame);       
         
-        return destuffedFrame;
+        //si on a eu des bits inversés/perdus, on attrape l'erreur ici avant d'avoir à 
+        //passer au travers du calcul de CRC
+        if(bits.indexOf("111111") != -1 || bits.length() % 8 != 0){
+            return "error";
+        }
+        
+        bits = bits.replace("111110", "11111");
+        
+        //Vu qu'on veut des chars, le nombre de bits doit être divisible par 8
+        while(bits.length() % 8 != 0){
+            bits = bits.substring(0, bits.length()-1);
+        }
+        
+        return this.convertToChars(bits);
     
     }
     
