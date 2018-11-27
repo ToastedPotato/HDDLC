@@ -19,7 +19,7 @@ Permet le calcul du CRC et du bit stuffing sur une tramme
         for (int i = 0; i < s.length()-1; i++)
         {
             int value = s.codePointAt(i);;
-            for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 8; j++)
             {
                 bitChain.append((value & 128) == 0 ? 0 : 1);
                 value <<= 1;
