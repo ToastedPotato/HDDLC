@@ -16,13 +16,13 @@ Permet le calcul du CRC et du bit stuffing sur une tramme
     //conversion d'une chaîne de charactères en une chaîne de 0 et de 1
     private String convertToBits(String s){
         StringBuilder bitChain = new StringBuilder();
-        for (int i = 0; i < s.length()-1; i++)
+        for (int i = 0; i < s.length(); i++)
         {
-            int value = s.codePointAt(i);;
-            for (int j = 0; j < 8; j++)
+            int value = s.codePointAt(i);
+            
+            for (int j = 7; j >= 0; j--)
             {
-                bitChain.append((value & 128) == 0 ? 0 : 1);
-                value <<= 1;
+                bitChain.append((value & 1<<j) == 0? '0' : '1');
              }
         }
         
@@ -35,17 +35,17 @@ Permet le calcul du CRC et du bit stuffing sur une tramme
         int x = 0;
         StringBuilder chars = new StringBuilder();                
         for(int i = 1; i <= bits.length(); i++){
-            
+                                    
+            //on lit 1 par 1 les bits jusqu'à en avoir 8
+            if(bits.charAt(i-1) == '0'){
+                x = x<<1;
+            }else{x = (x<<1) + 1;} 
+                        
             if(i % 8 == 0){
                 //on convertit le nombre x sur 8 bits en un charactère
                 chars.append(Character.toChars(x)[0]);
                 x = 0;
-            }
-                        
-            //on lit 1 par 1 les bits jusqu'à en avoir 8
-            if(bits.charAt(i-1) == '0'){
-                x = x<<1;
-            }else{x = (x<<1) + 1;}            
+            }           
         
         }
         
@@ -102,7 +102,7 @@ Permet le calcul du CRC et du bit stuffing sur une tramme
         
         //si le reste est non nul
         if(x != 0){            
-            crc = Character.toChars(x>>8) + "" + Character.toChars(x & 255);
+            crc = Character.toChars(x>>8)[0] + "" + Character.toChars(x & 255)[0];
         }
         
         return data+crc;
