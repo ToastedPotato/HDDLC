@@ -8,13 +8,13 @@ gérer les réponses du récepteur
 */
     
     //Les paramètres fournis à l'exécution pour l'émetteur
-    private string machineName;
-    private string portNum;
-    private string fileName;
+    private String machineName;
+    private String portNum;
+    private String fileName;
     private int windowSize;
     
     //Les données extraites du fichier
-    private string fileData;    
+    private String fileData;    
     
     private static final int polynome = (1<<16)+(1<<12)+(1<<5)+1;
     
@@ -26,7 +26,7 @@ gérer les réponses du récepteur
     private Decoder d;
     
     //Constructeur
-    public Sender(string mName, string pNum, string fName, int wSize){
+    public Sender(String mName, String pNum, String fName, int wSize){
         this.machineName = mName;
         this.portNum = pNum;
         this.fileName = fName;

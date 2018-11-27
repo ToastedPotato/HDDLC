@@ -9,7 +9,7 @@ absence d'erreur ou non
 */
 
     //Les paramètres fournis à l'exécution pour l'émetteur
-    private string portNum;
+    private String portNum;
         
     private static final int polynome = (1<<16)+(1<<12)+(1<<5)+1;
     
@@ -21,7 +21,7 @@ absence d'erreur ou non
     private Decoder d;
     
     //Constructeur
-    public Receiver(string pNum){
+    public Receiver(String pNum){
         this.portNum = pNum;
         
         this.e = new Encoder(this.polynome);
