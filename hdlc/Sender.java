@@ -21,10 +21,7 @@ gérer les réponses du récepteur
     //S'occupe de la préparation des trames en calculant le CRC et procédant
     //au bit stuffing
     private Encoder e;
-    
-    //S'occupe d'éliminer le bit stuffing des trames reçues du récepteur
-    private Decoder d;
-    
+        
     //Constructeur
     public Sender(String mName, String pNum, String fName, int wSize){
         this.machineName = mName;
@@ -33,8 +30,7 @@ gérer les réponses du récepteur
         this.windowSize = wSize;
         
         this.e = new Encoder(this.polynome);
-        this.d = new Decoder(this.polynome);    
-    
+        
     }
 
 }

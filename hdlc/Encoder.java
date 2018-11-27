@@ -70,15 +70,15 @@ Permet le calcul du CRC et du bit stuffing sur une tramme
         //la division
         int x = 0;                
         for(int i = 0; i < bits.length(); i++){
+            //division si le 17e bit = 1
+            if(x > 65535){ x = x^this.polynome;}
             
-            if(x <= 65535){
             //on lit 1 par 1 les bits de la trame jusqu'à avoir un nombre assez 
             //grand pour le XOR: 17 bits, avec le 17e à 1
-                if(bits.charAt(i) == '0'){
-                    x = x<<1;
-                }else{x = (x<<1) + 1;}
-            }else{ x = x^this.polynome;}
-        
+            if(bits.charAt(i) == '0'){
+                x = x<<1;
+            }else{x = (x<<1) + 1;}
+                
         }
                 
         return x;
@@ -98,7 +98,7 @@ Permet le calcul du CRC et du bit stuffing sur une tramme
         
         //Calcul du reste sur la tramme+16 bits à 0        
         String s = data + Character.toChars(0) + Character.toChars(0);         
-        x = this.checkCRC(s);
+        int x = this.checkCRC(s);
         
         //si le reste est non nul
         if(x != 0){            
