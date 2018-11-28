@@ -97,7 +97,7 @@ Permet le calcul du CRC et du bit stuffing sur une tramme
         //TODO: faire le calcul du CRC ici
         
         //Calcul du reste sur la tramme+16 bits à 0        
-        String s = data + Character.toChars(0) + Character.toChars(0);         
+        String s = data + Character.toChars(0)[0] + Character.toChars(0)[0];         
         int x = this.checkCRC(s);
         
         //si le reste est non nul
