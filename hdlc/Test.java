@@ -9,7 +9,7 @@ public class Test{
         //tramme de test pour le CRC; c'est le polynom CRC-CCIT multiplié par 8
         String testString=""+((char) 8)+((char) 129)+((char) 8);  
         
-        Encoder e = new Encoder((1<<16)+(1<<12)+(1<<5)+1);
+        Encoder e = new Encoder();
         
         //Test du bit stuffing; on vérifie que la tramme résultante n'a plus de caractères flags dedans
         String stuffedFrame = e.bitStuffing(testFrame.substring(1, testFrame.length()-1));
