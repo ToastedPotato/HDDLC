@@ -6,12 +6,7 @@ public class Encoder
 Permet le calcul du CRC et du bit stuffing sur une tramme 
 */
     //Le polynôme générateur
-    private int polynome;
-    
-    //Constructeur
-    public Encoder(int p){
-        this.polynome = p;    
-    }
+	private static final int POLYNOME = (1<<16)+(1<<12)+(1<<5)+1;
     
     //conversion d'une chaîne de charactères en une chaîne de 0 et de 1
     private String convertToBits(String s){
@@ -69,7 +64,7 @@ Permet le calcul du CRC et du bit stuffing sur une tramme
         int x = 0;                
         for(int i = 0; i < bits.length(); i++){
             //division si le 17e bit = 1
-            if(x > 65535){ x = x^this.polynome;}
+            if(x > 65535){x = x^POLYNOME;}
             
             //on lit 1 par 1 les bits de la trame jusqu'à avoir un nombre assez 
             //grand pour le XOR: 17 bits, avec le 17e à 1
@@ -77,8 +72,7 @@ Permet le calcul du CRC et du bit stuffing sur une tramme
                 x = x<<1;
             }else{x = (x<<1) + 1;}
                 
-        }
-                
+        }                
         return x;
     
     }
@@ -92,7 +86,6 @@ Permet le calcul du CRC et du bit stuffing sur une tramme
         */
         String crc = "";
         
-        //TODO: faire le calcul du CRC ici
         
         //Calcul du reste sur la tramme+16 bits à 0        
         String s = data + Character.toChars(0)[0] + Character.toChars(0)[0];         
@@ -115,8 +108,6 @@ Permet le calcul du CRC et du bit stuffing sur une tramme
         suite de 5 bits à 1. La méthode assume que la frame est fournie sans 
         les flags
         */
-                
-        //TODO: Appliquer le bit stuffing ici
                 
         String bits = this.convertToBits(frame);
         

@@ -8,17 +8,12 @@ public class Sender {
 La classe se chargeant de lire les données dans le fichier, créer les trames et 
 gérer les réponses du récepteur
 */
-
-	private static final int POLYNOME = (1<<16)+(1<<12)+(1<<5)+1;
 	
     //Les paramètres fournis à l'exécution pour l'émetteur
     private String machineName;
     private String fileName;
     private int windowSize;
-    private int portNum;
-    
-    //Les données extraites du fichier
-    private String fileData;    
+    private int portNum;    
         
     //S'occupe de la préparation des trames en calculant le CRC et procédant
     //au bit stuffing
@@ -37,7 +32,7 @@ gérer les réponses du récepteur
 	        this.portNum = pNum;
 	        this.fileName = fName;
 	        this.windowSize = wSize;
-	        this.encoder = new Encoder(POLYNOME);
+	        this.encoder = new Encoder();
 			this.socket = new Socket(this.machineName, this.portNum);  
 			this.reader = new BufferedReader(new FileReader(this.fileName)); 
 			this.out = new DataOutputStream(socket.getOutputStream());
@@ -52,16 +47,11 @@ gérer les réponses du récepteur
     
     private void run(){
     	this.connectionRequest();	
-    	// while there is lines in the file
+    	// Tant qu'il y a des lignes à lire dans le fichier, les lire.
+   	
     	String line = "";
     	while (true) {
             try {
-            	try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
                 line = reader.readLine();
                 if(line == null){
                 	out.writeUTF("done!done!!done!!!");
