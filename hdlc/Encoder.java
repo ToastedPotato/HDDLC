@@ -123,11 +123,7 @@ Permet le calcul du CRC et du bit stuffing sur une tramme
         String bits = this.convertToBits(frame);
         
         //ajout d'un 0 après chaque 11111
-        while(bits.indexOf("11111") != -1){
-            int i = bits.indexOf("11111");
-            bits = bits.substring(0, i+5) + "0" + bits.substring(i+5);
-        
-        }
+        bits = bits.replace("11111", "111110");
         
         //étant donné que la tramme doit être envoyée sous forme de caractères
         //on doit s'assurer que le nombre de bits est divisible par 8. On retire
