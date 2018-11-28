@@ -24,10 +24,6 @@ gérer les réponses du récepteur
     //au bit stuffing
     private Encoder encoder;
     
-    //S'occupe d'éliminer le bit stuffing des trames reçues du récepteur
-    private Decoder decoder;
-
-    
     // Gère le transfert des données.
 	private Socket socket; 
 	private BufferedReader reader; 
@@ -42,7 +38,6 @@ gérer les réponses du récepteur
 	        this.fileName = fName;
 	        this.windowSize = wSize;
 	        this.encoder = new Encoder(POLYNOME);
-	        this.decoder = new Decoder(POLYNOME);
 			this.socket = new Socket(this.machineName, this.portNum);  
 			this.reader = new BufferedReader(new FileReader(this.fileName)); 
 			this.out = new DataOutputStream(socket.getOutputStream());
@@ -59,9 +54,19 @@ gérer les réponses du récepteur
     	this.connectionRequest();	
     	// while there is lines in the file
     	String line = "";
-    	while (!line.equals("Over")) { 
+    	while (true) {
             try {
-                line = reader.readLine(); 
+            	try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+                line = reader.readLine();
+                if(line == null){
+                	out.writeUTF("done!done!!done!!!");
+                	break;
+                }
                 out.writeUTF(line); 
             } catch(IOException i) { 
                 System.out.println(i); 
@@ -95,7 +100,6 @@ gérer les réponses du récepteur
 	            "paramètres d'initialisation comme suit: \n" +
 	            "java Sender <Nom_Machine> <Numero_Port> " +
 	            "<Nom_fichier> <0>\n";
-		System.out.println(args.length);
 		if (args.length >= 4) {
 			try{			
 				String machineName = args[0];

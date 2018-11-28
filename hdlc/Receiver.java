@@ -7,7 +7,7 @@ import java.io.*;
 public class Receiver {
 /*
 Le classe recevant les messages de l'émetteur. Décode les trames puis vérifie la
-présence d'erreurs avec le CRC. Retourne un RR ou un REJ selon qu'il y a 
+présence d'e/rreurs avec le CRC. Retourne un RR ou un REJ selon qu'il y a 
 absence d'erreur ou non
 */	
 	private static final int POLYNOME = (1<<16)+(1<<12)+(1<<5)+1;
@@ -19,9 +19,6 @@ absence d'erreur ou non
     //au bit stuffing
     private Encoder encoder;
     
-    //S'occupe d'éliminer le bit stuffing des trames reçues du récepteur
-    private Decoder decoder;
-    
   //Gère le transfert de données 
   	private Socket		 	socket; 
   	private ServerSocket 	server; 
@@ -32,7 +29,6 @@ absence d'erreur ou non
         try {
         	this.portNum = pNum;        
             this.encoder = new Encoder(POLYNOME);
-            this.decoder = new Decoder(POLYNOME);
 			this.server = new ServerSocket(this.portNum);
 			this.socket = this.server.accept();
 			this.in = new DataInputStream(new BufferedInputStream(this.socket.getInputStream()));
@@ -44,12 +40,19 @@ absence d'erreur ou non
     private void run() {
 		String line = "";
 		// TODO: placeholder 
-		while (!line.equals("Over")) { 
+		while(true) { 
 			try {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				line = this.in.readUTF();
+				if(line.equals("done!done!!done!!!")){
+					break;
+				}
 				System.out.println(line);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
 			} catch (IOException i) { 
 				System.out.println(i); 
 			} 
