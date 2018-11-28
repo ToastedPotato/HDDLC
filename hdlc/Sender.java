@@ -77,10 +77,8 @@ gérer les réponses du récepteur
 		//create frame with info
 		//send info, wait for return ACK
     }
-    
-   
-    
-	// closes the connection    
+        
+    // closes the connection    
     private void close() {
 		try { 
 			reader.close(); 
