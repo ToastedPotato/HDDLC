@@ -4,11 +4,11 @@ public class Hdlc
 {
     public static void main(String[] args) {
         
-        string errorMsg = "Commande incorrecte, veuillez spécifier les" + 
+        String errorMsg = "Commande incorrecte, veuillez spécifier les" + 
             "paramètres d'initialisation comme suit: \n" + 
             "-Exécuter un émetteur: Sender <Nom_Machine> <Numero_Port> " + 
             "<Nom_fichier> <0>\n" + 
-            "-Exécuter un receveur: Receiver <Numero_Port>\n"
+            "-Exécuter un receveur: Receiver <Numero_Port>\n";
         
         if(args[0].equals("Sender")){
             //Si on reçoit la commande d'initialisation d'un émetteur
