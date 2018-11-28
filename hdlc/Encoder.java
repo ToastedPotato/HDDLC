@@ -16,14 +16,12 @@ Permet le calcul du CRC et du bit stuffing sur une tramme
     //conversion d'une chaîne de charactères en une chaîne de 0 et de 1
     private String convertToBits(String s){
         StringBuilder bitChain = new StringBuilder();
-        for (int i = 0; i < s.length(); i++)
-        {
+        for (int i = 0; i < s.length(); i++){
             int value = s.codePointAt(i);
             
-            for (int j = 7; j >= 0; j--)
-            {
+            for (int j = 7; j >= 0; j--){
                 bitChain.append((value & 1<<j) == 0? '0' : '1');
-             }
+            }
         }
         
         return bitChain.toString();
