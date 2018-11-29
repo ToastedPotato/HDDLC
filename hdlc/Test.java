@@ -1,47 +1,8 @@
 package hdlc;
 
 public class Test{
-
-    public String byteLoss(String frame){
-        /*
-        Prend en paramètre une tramme et retourne la même tramme avec un 
-        caractère manquant
-        */
-        
-        //trouver de façon semi-aléatoire le caractère à éliminer
-        int l = frame.length();        
-        int i = 1024 % (l-1);
-        
-        if(i == 0){i++;}
-        
-        System.out.println("Bits du caractère "+ (i) +" perdus!");
-        
-        return frame.substring(0, i) + frame.substring(i+1, l);
-    
-    }
-    
-    public String byteflip(String frame){
-        /*
-        Prend en paramètre une tramme et retourne la même tramme avec un 
-        caractère dont tous les bits sont inversés
-        */
-        
-        //trouver de façon semi-aléatoire le caractère à éliminer
-        int l = frame.length();        
-        int i = 1024 % (l-1);
-        
-        if(i == 0){i++;}
-        
-        //on flip le code du charactère en faisant un XOR avec 1111 1111
-        int flipped = frame.codePointAt(i)^255;
-        
-        System.out.println("Bits "+ (i) +" inversés!");
-        
-        return frame.substring(0, i)+Character.toChars(flipped)[0]+frame.substring(i+1, l);
-    
-    }
-      
-    public void testEncoder(){  
+          
+    public static void main(String[] args){  
         
         //tramme de test, Type = I, Num = @ (le numéro de la tramme est 2, encodé sur les bits 7, 6 et 5 de l'octet Num)    
         String testFrame="~I@ABCDEFG~je~connais~mon~alphabet~";
@@ -94,6 +55,37 @@ public class Test{
             "Reste: "+ remainder2 + "\n" + success4 + "\n" +
             "Tramme avec CRC: "+ frameCRC + "\n" + 
             "Reste: "+ remainder3 + "\n" + success5 + "\n");
+            
         
+        String frameSent = e.buildFrame(testFrame.substring(1, testFrame.length()-1));
+        
+        int l = frameSent.length();        
+        int i = 1024 % (l-1);
+        
+        if(i == 0){i++;}
+        
+        String badFrame = frameSent.substring(0, i) + frameSent.substring(i+1, l);
+        
+        int remainder4 = e.checkCRC(e.decodeFrame(badFrame));
+                
+        String success6 = (remainder4 != 0)? "Erreur détectée!" : "Erreur non détectée!";
+        
+        System.out.println("Test de la détection de perte de données: \n"+
+            "Tramme envoyée: "+ testFrame + "\n" +
+            "Tramme érronée: "+ badFrame +"\n" + success6 + "\n");
+                        
+        int flipped = frameSent.codePointAt(i)^255;
+                   
+        String badFrame2 = frameSent.substring(0, i)+Character.toChars(flipped)[0]+frameSent.substring(i+1, l);
+        
+        String error = e.bitDeStuffing(badFrame2);
+                        
+        String success7 = (error.equals("error"))? "Erreur détectée!" : "Erreur non détectée!";
+        
+        System.out.println("Test de la détection de l'inversion d'octets: \n"+
+            "Tramme envoyée: "+ testFrame + "\n" +
+            "Tramme érronée: "+ badFrame2 +"\n" + success7 + "\n");
+                   
     }
+    
 }
