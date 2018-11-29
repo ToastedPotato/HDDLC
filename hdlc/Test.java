@@ -14,6 +14,8 @@ public class Test{
         
         if(i == 0){i++;}
         
+        System.out.println("Bits du caractère "+ (i) +" perdus!");
+        
         return frame.substring(0, i) + frame.substring(i+1, l);
     
     }
@@ -32,6 +34,8 @@ public class Test{
         
         //on flip le code du charactère en faisant un XOR avec 1111 1111
         int flipped = frame.codePointAt(i)^255;
+        
+        System.out.println("Bits "+ (i) +" inversés!");
         
         return frame.substring(0, i)+Character.toChars(flipped)[0]+frame.substring(i+1, l);
     
