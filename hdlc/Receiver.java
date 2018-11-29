@@ -22,6 +22,7 @@ absence d'erreur ou non
   	private Socket		 	socket; 
   	private ServerSocket 	server; 
   	private DataInputStream in;
+  	private DataOutputStream out;
     
     //Constructeur
     public Receiver(int pNum) {
@@ -30,25 +31,57 @@ absence d'erreur ou non
             this.encoder = new Encoder();
 			this.server = new ServerSocket(this.portNum);
 			this.socket = this.server.accept();
+			this.out = new DataOutputStream(socket.getOutputStream());
 			this.in = new DataInputStream(new BufferedInputStream(this.socket.getInputStream()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}        
     }
     
+    // Gère les requêtes demandées par Sender.
     private void run() {
-		String line = "";
-		// TODO: placeholder 
-		while(true) { 
+		String frameLine;
+		String frame;
+		String response;
+		int requestNumber = 0;
+		boolean openForReception = true;
+		boolean connectionOpened = false;
+		while(openForReception) {
 			try {
-				line = this.in.readUTF();
-				if(line.equals("done!done!!done!!!")){
-					break;
+				frameLine = this.in.readUTF();
+				if(frameLine != null){
+					frame = this.encoder.decodeFrame(frameLine);
+					char frameType = frame.charAt(0); 
+					
+					if(frameType == 'C'){
+						response = this.encoder.buildFrame("A0");
+						out.writeUTF(response);
+						connectionOpened = true;
+					} else if(frameType == 'I') {
+						if (connectionOpened){
+							int frameNum = frame.charAt(1);
+							if(frameNum == requestNumber) {
+								String frameInfo = frame.substring(2, frame.length() - 1);
+								System.out.println(" Receiver: Trame " + frameNum +
+										"recue, contenu du message: " + frameInfo);
+								requestNumber = (requestNumber + 1) % 8;
+								response = this.encoder.buildFrame("A" + requestNumber);
+								out.writeUTF(response);
+							}						
+						} else {
+							response = this.encoder.buildFrame("R0");
+							out.writeUTF(response);
+							System.out.println("Erreur: Requête d'envoi" + 
+							" d'information envoyée avant requête de connexion.");
+						}
+					} else if(frameType == 'F'){
+						System.out.println("Demande de déconnexion reçue. Déconnexion.");
+						openForReception = false;
+					}
 				}
-				System.out.println(line);
 			} catch (IOException i) { 
 				System.out.println(i); 
-			} 
+			}
 		} 
     }
     

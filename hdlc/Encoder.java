@@ -77,7 +77,8 @@ Permet le calcul du CRC et du bit stuffing sur une tramme
     
     }
     
-    //Cacule le CRC à l'aide du polynôme et retourne la tramme avec le CRC
+    // Calcule le CRC à l'aide du polynôme et retourne la tramme avec le CRC,
+    // sans les phanions.
     public String computeCRC(String data){
         /*
         diviser la chaîne de bits obtenue à partir des éléments Type, Num et
@@ -105,7 +106,7 @@ Permet le calcul du CRC et du bit stuffing sur une tramme
         /*
         Le but est de rendre impossible l'occurrence de caractères "~" 
         (01111110) dans la tramme. Essentiellment insérer un 0 après chaque 
-        suite de 5 bits à 1. La méthode assume que la frame est fournie sans 
+        suite de 5 bits à 1. La méthode assume que la tramme est fournie sans 
         les flags
         */
                 
@@ -158,5 +159,16 @@ Permet le calcul du CRC et du bit stuffing sur une tramme
         
         return this.convertToChars(bits);
     
+    }
+    
+    public String buildFrame(String starter){
+    	String frame = computeCRC(starter);
+    	frame = bitStuffing(frame);
+    	return  "~" + frame + "~"; 
+    }
+    
+    public String decodeFrame(String starter){
+    	String frame = starter.substring(1, starter.length() - 1);
+    	return bitDeStuffing(frame);
     }
 }
