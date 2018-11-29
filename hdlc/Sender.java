@@ -3,7 +3,6 @@ package hdlc;
 import java.net.*;
 import java.io.*;
 import java.sql.Timestamp;
-import java.util.Arrays;
 
 public class Sender {
 /*
@@ -65,93 +64,88 @@ public class Sender {
     	int sequenceBase = 0;
     	int sequenceMax = windowSize + 1;
     	boolean dataLeftInFile = true;
-    	String dataLine = "";
-    	String response = ""; 
+    	String dataLine;
+    	String response; 
     	String[] slidingWindow = new String[windowSize];
     	long[] temporizer = new long[windowSize];
-    	Arrays.fill(slidingWindow, null);
-    	Arrays.fill(temporizer, -1);
     	
-    	while(dataLeftInFile) {
-    		boolean shortCircuitedInit = false;
-    		
-    		// Boucle initialisant la première sliding window. Elle envoie chaque trame
-    		// de la fenêtre, sans demander la réponse en retour, pour la première
-    		// instance de la fenêtre glissante.
-    		try {
-    			for(int i=0; i < slidingWindow.length; i++) {
-					dataLine = reader.readLine();
-					//S'il reste des lignes dans le fichier:
-					if(dataLine != null){
-						// Créer le frame, l'envoyer, et assigner le temps d'envoi
-						String frame = "I" + Integer.toString(i) + dataLine; 
-						frame = this.encoder.buildFrame(frame); 
-						out.writeUTF(frame);
-						temporizer[i] = this.setTime();
-					} else {
-						shortCircuitedInit = true;
-						break;
-					}
-				}
-    		
-    			// S'il n'y avait pas assez de lignes de texte pour correctement
-    			// initialiser la fenêtre, passer à la dernière étape.
-    			if(shortCircuitedInit) {
+    	// Boucle initialisant la première sliding window. Elle envoie chaque trame
+		// de la fenêtre, sans demander la réponse en retour, pour la première
+		// instance de la fenêtre glissante.
+    	try {	
+    		for(int i=0; i < slidingWindow.length; i++){
+    			dataLine = reader.readLine();
+    			//S'il reste des lignes dans le fichier:
+    			if(dataLine != null){
+    				// Créer le frame, l'envoyer, et assigner le temps d'envoi
+    				String frame = "I" + Integer.toString(i) + dataLine; 
+    				frame = this.encoder.buildFrame(frame);
+    				out.writeUTF(frame);
+    				temporizer[i] = this.setTime();
+    			} else {
+    				dataLeftInFile = false;
+    				//TODO: sequencemax = i or something
     				break;
     			}
-    			
+    		}
+    		while(dataLeftInFile) {    		    			
     			//Attente d'une réponse par le récepteur.
     			response = this.in.readUTF();
-    			
+ 
     			// S'il y a une réponse,
     			if(response != null) {
     				response = this.encoder.decodeFrame(response);
-    			// Si la checksum concorde, regarder le type du message
-    			if(this.encoder.checkCRC(response) == 0) {
-    				char frameType = response.charAt(1);
+    				// 	Si la checksum concorde, regarder le type du message
+    				System.out.println(this.encoder.checkCRC(response));
+    				if(this.encoder.checkCRC(response) == 0) {
+    					char frameType = response.charAt(1);
+    					// Si la réponse est un Receive Ready, regarder le numéro de la trame. 
+    					if(frameType == 'A') {
+    						int requestNum = response.charAt(2);
 					
-    				// Si la réponse est un Receive Ready, 
-   					// regarder le numéro de la trame. 
-   					if(frameType == 'A') {
-   						int requestNum = response.charAt(2);
-					
-   						// Si le numéro de requête est plus grand que le numéro 
-   						// du début de la séquence, ou le dernier cas ou
-   						// sequenceBase est à la fin du tableau
-   						if(requestNum > sequenceBase
-							|| (requestNum == 0 && sequenceBase == 7)) {
+    						// Si le numéro de requête est plus grand que le numéro 
+    						// du début de la séquence, ou le dernier cas ou
+    						// sequenceBase est à la fin du tableau
+    						if(requestNum > sequenceBase
+    								|| (requestNum == 0 && sequenceBase == 7)) {
 						
-   							// Ajuster les indices de la fenêtre glissante
-   							sequenceMax = (sequenceMax - sequenceBase + requestNum) % windowSize;
-   							sequenceBase = requestNum;
+    							// Ajuster les indices de la fenêtre glissante
+    							sequenceMax = (sequenceMax - sequenceBase + requestNum) % windowSize;
+    							sequenceBase = requestNum;
     					
-   							//Envoie la prochaine trame de la fenêtre glissante
-   							// et met à jour le temps d'envoi.
+    							//Envoie la prochaine trame de la fenêtre glissante
+    							// et met à jour le temps d'envoi.
     					
-   							out.writeUTF(slidingWindow[sequenceBase]);
-   							temporizer[sequenceBase] = this.setTime();
+    							out.writeUTF(slidingWindow[sequenceBase]);
+    							temporizer[sequenceBase] = this.setTime();
     						    					
-   							//Ajoute une nouvelle trame dans la fenêtre glissante, 
-   							// à l'index de la requête précédente complétée.
-   							dataLine = reader.readLine();
-   							if(dataLine != null){
-   								slidingWindow[sequenceMax] = dataLine;
-   							} else {
-   								dataLeftInFile = false;
-   							}
-   						}
-   					// Si la réponse est un rejet, réenvoyer les trames à partir de cet index. 
-   					} else if (frameType == 'R') {
-   						sendWindow(sequenceBase, sequenceMax, slidingWindow, temporizer);
-   					}
-   				}
-   			}
-    		} catch (IOException e) {
-				e.printStackTrace();
-    		}	
-    		// Vérification des envois des trames par temporisateur.
-    		this.checkTimestamps(temporizer, slidingWindow);
-    	}
+    							//Ajoute une nouvelle trame dans la fenêtre glissante, 
+    							// à l'index de la requête précédente complétée.
+    							dataLine = reader.readLine();
+    							if(dataLine != null){
+    								slidingWindow[sequenceMax] = dataLine;
+    							} else {
+    								dataLeftInFile = false;
+    							}
+    						}
+
+    					// Si la réponse est un rejet, réenvoyer les trames à partir de cet index. 
+    					} else if (frameType == 'R') {
+    						sendWindow(sequenceBase, sequenceMax, slidingWindow, temporizer);
+    					}
+   				
+    					// Si la vérification par CRC détecte une erreur:
+    				} else {
+    					System.out.println("Détection d'erreur dans la trame. Bit(s) possiblement corrompus");
+    				}
+    			}		
+    		}
+    	} catch (IOException e) {
+			e.printStackTrace();
+    	}	
+   		// Vérification des envois des trames par temporisateur.
+    	this.checkTimestamps(temporizer, slidingWindow);
+    	
 		//Envoi des dernières trames d'information
     	sendWindow(sequenceBase, sequenceMax, slidingWindow, temporizer);	
     }
@@ -183,6 +177,7 @@ public class Sender {
 		}
     }
 
+    // Entâme une requête de connexion avec Receiver.
     private boolean connectionRequest(){
     	String connectionFrame = this.encoder.buildFrame("C0");
     	try {
@@ -193,10 +188,12 @@ public class Sender {
 				if(response != null) {
 					// La trame reçue est décodée
 					response = this.encoder.decodeFrame(response);
+					
 					// Si la trame est valide
 					if(this.encoder.checkCRC(response) == 0) {
+						
 						// Si la trame est une trame d'acceptation de résultats
-						if(response.charAt(1) == 'A') {
+						if(response.charAt(0) == 'A') {
 							System.out.println("Requête de connexion acceptée, connexion établie.");
 							return true;
 						}
@@ -220,7 +217,6 @@ public class Sender {
 			e.printStackTrace();
 		}
 	}
-    
     
     // Ferme la connexion après l'envoi d'une tramme de fermeture.     
     private void close() {
@@ -255,7 +251,7 @@ public class Sender {
 				} else {
 					Sender sender = new Sender(machineName, portNumber, fileName, windowSize);
 					sender.run();
-					sender.close();
+					//sender.close();
 				}
 			} catch(IllegalArgumentException e) {
 				System.out.println(e);

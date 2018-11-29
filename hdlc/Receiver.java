@@ -48,32 +48,48 @@ absence d'erreur ou non
 		boolean connectionOpened = false;
 		while(openForReception) {
 			try {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				// Lecture des réponses
 				frameLine = this.in.readUTF();
 				if(frameLine != null){
-					frame = this.encoder.decodeFrame(frameLine);
-					char frameType = frame.charAt(0); 
 					
+					// Décodage de la frame
+					frame = this.encoder.decodeFrame(frameLine);
+					
+					char frameType = frame.charAt(0);
 					if(frameType == 'C'){
+						// Envoie un RR après une requête de connexion.
 						response = this.encoder.buildFrame("A0");
 						out.writeUTF(response);
 						connectionOpened = true;
+
+					// Si la trame recue est une trame d'information:
 					} else if(frameType == 'I') {
+						// Valide si une connexion avait été établie avant.
 						if (connectionOpened){
-							int frameNum = frame.charAt(1);
+							int frameNum = frame.charAt(1) - '0';
+							// Si la trame envoyée est la trame demandée, envoyer une RR 
 							if(frameNum == requestNumber) {
-								String frameInfo = frame.substring(2, frame.length() - 1);
-								System.out.println(" Receiver: Trame " + frameNum +
-										"recue, contenu du message: " + frameInfo);
+								String frameInfo = frame.substring(2, frame.length() - 2);
+								System.out.println("Trame " + frameNum +
+										" recue, contenu du message: " + frameInfo);
 								requestNumber = (requestNumber + 1) % 8;
 								response = this.encoder.buildFrame("A" + requestNumber);
+								System.out.println(response);
 								out.writeUTF(response);
-							}						
+							}
+						// Si la connexion n'avait pas été préalablement faite:
 						} else {
 							response = this.encoder.buildFrame("R0");
 							out.writeUTF(response);
 							System.out.println("Erreur: Requête d'envoi" + 
 							" d'information envoyée avant requête de connexion.");
 						}
+						
 					} else if(frameType == 'F'){
 						System.out.println("Demande de déconnexion reçue. Déconnexion.");
 						openForReception = false;
@@ -91,7 +107,7 @@ absence d'erreur ou non
 			this.socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} 
+		}
     }
     
     public static void main(String[] args){
