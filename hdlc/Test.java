@@ -1,7 +1,43 @@
 package hdlc;
 
-public class Test{  
-    public static void main(String args[]){  
+public class Test{
+
+    public String byteLoss(String frame){
+        /*
+        Prend en paramètre une tramme et retourne la même tramme avec un 
+        caractère manquant
+        */
+        
+        //trouver de façon semi-aléatoire le caractère à éliminer
+        int l = frame.length();        
+        int i = 1024 % (l-1);
+        
+        if(i == 0){i++;}
+        
+        return frame.substring(0, i) + frame.substring(i+1, l);
+    
+    }
+    
+    public String byteflip(String frame){
+        /*
+        Prend en paramètre une tramme et retourne la même tramme avec un 
+        caractère dont tous les bits sont inversés
+        */
+        
+        //trouver de façon semi-aléatoire le caractère à éliminer
+        int l = frame.length();        
+        int i = 1024 % (l-1);
+        
+        if(i == 0){i++;}
+        
+        //on flip le code du charactère en faisant un XOR avec 1111 1111
+        int flipped = frame.codePointAt(i)^255;
+        
+        return frame.substring(0, i)+Character.toChars(flipped)[0]+frame.substring(i+1, l);
+    
+    }
+      
+    public void testEncoder(){  
         
         //tramme de test, Type = I, Num = @ (le numéro de la tramme est 2, encodé sur les bits 7, 6 et 5 de l'octet Num)    
         String testFrame="~I@ABCDEFG~je~connais~mon~alphabet~";
@@ -16,7 +52,7 @@ public class Test{
         
         String success1 = (stuffedFrame.indexOf("~") == -1)? "Test réussi!" : "Test échoué!";
         
-        System.out.println("Test du bit Stuffing: \n"+
+        System.out.println("Test des fonctions de l'encodeur \n\n" + "Test du bit Stuffing: \n"+
             "Tramme à convertir: "+ testFrame + "\n" + 
             "Tramme après bit Stuffing: "+ stuffedFrame + "\n" + success1 + "\n");
         
