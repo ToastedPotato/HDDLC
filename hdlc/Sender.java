@@ -63,6 +63,7 @@ public class Sender {
     public void goBackNLoop(int windowSize) {
     	int sequenceBase = 0;
     	int sequenceMax = windowSize + 1;
+    	int currentFrameIndex = 0;
     	boolean dataLeftInFile = true;
     	String dataLine;
     	String response; 
@@ -78,30 +79,33 @@ public class Sender {
     			//S'il reste des lignes dans le fichier:
     			if(dataLine != null){
     				// Créer le frame, l'envoyer, et assigner le temps d'envoi
-    				String frame = "I" + Integer.toString(i) + dataLine; 
+    				String frame = "I" + Integer.toString(i) + dataLine;
     				frame = this.encoder.buildFrame(frame);
-    				out.writeUTF(frame);
+    				System.out.println("Envoi de la trame " + currentFrameIndex + ": " + frame);
+    				slidingWindow[i] = frame;
+    				out.writeUTF(slidingWindow[i]);
     				temporizer[i] = this.setTime();
+    				currentFrameIndex = (currentFrameIndex + 1) % 8;
     			} else {
     				dataLeftInFile = false;
-    				//TODO: sequencemax = i or something
+    				sequenceMax = i;
     				break;
     			}
     		}
     		while(dataLeftInFile) {    		    			
     			//Attente d'une réponse par le récepteur.
     			response = this.in.readUTF();
- 
     			// S'il y a une réponse,
     			if(response != null) {
     				response = this.encoder.decodeFrame(response);
     				// 	Si la checksum concorde, regarder le type du message
-    				System.out.println(this.encoder.checkCRC(response));
-    				if(this.encoder.checkCRC(response) == 0) {
-    					char frameType = response.charAt(1);
+    				int remainder = this.encoder.checkCRC(response);
+    				if(remainder == 0 || remainder == 65536) {
+    					char frameType = response.charAt(0);
     					// Si la réponse est un Receive Ready, regarder le numéro de la trame. 
     					if(frameType == 'A') {
-    						int requestNum = response.charAt(2);
+    						int requestNum = response.charAt(1) - '0';
+    						System.out.println("Trame " + requestNum + " maintenant demandée.");
 					
     						// Si le numéro de requête est plus grand que le numéro 
     						// du début de la séquence, ou le dernier cas ou
@@ -111,11 +115,13 @@ public class Sender {
 						
     							// Ajuster les indices de la fenêtre glissante
     							sequenceMax = (sequenceMax - sequenceBase + requestNum) % windowSize;
-    							sequenceBase = requestNum;
+    							sequenceBase = requestNum % windowSize;
     					
     							//Envoie la prochaine trame de la fenêtre glissante
     							// et met à jour le temps d'envoi.
-    					
+    							System.out.println("Envoi de la trame " + 
+    									slidingWindow[sequenceBase].charAt(2) +
+    									": " + slidingWindow[sequenceBase]);
     							out.writeUTF(slidingWindow[sequenceBase]);
     							temporizer[sequenceBase] = this.setTime();
     						    					
@@ -123,7 +129,9 @@ public class Sender {
     							// à l'index de la requête précédente complétée.
     							dataLine = reader.readLine();
     							if(dataLine != null){
-    								slidingWindow[sequenceMax] = dataLine;
+    								String frame = "I" + currentFrameIndex + dataLine;
+    								slidingWindow[sequenceMax] = this.encoder.buildFrame(frame);
+    			    				currentFrameIndex = (currentFrameIndex + 1) % 8;
     							} else {
     								dataLeftInFile = false;
     							}
@@ -131,6 +139,8 @@ public class Sender {
 
     					// Si la réponse est un rejet, réenvoyer les trames à partir de cet index. 
     					} else if (frameType == 'R') {
+    						int requestNum = response.charAt(1) - '0';
+    						System.out.println("Trame " + requestNum + " rejetée, nouvel envoi des trames de la fenêtre.");
     						sendWindow(sequenceBase, sequenceMax, slidingWindow, temporizer);
     					}
    				
@@ -149,10 +159,13 @@ public class Sender {
 		//Envoi des dernières trames d'information
     	sendWindow(sequenceBase, sequenceMax, slidingWindow, temporizer);	
     }
-
+    
+    
     private void sendWindow(int start, int finish, String[] information, long[] temporizer){
     	try {
-    		for(int i = start % information.length; i != finish; i++){
+    		for(int i = start; i == ((finish +1) % information.length); i = (i + 1) % information.length){
+    			int frameNum = information[i].charAt(2) - '0';
+    			System.out.println("Envoi de la Trame " + frameNum + ": " + information[i]); 
 				out.writeUTF(information[i]);
 				temporizer[i] = this.setTime();
     		}
@@ -213,6 +226,7 @@ public class Sender {
 		try {
 			String finalFrame = this.encoder.buildFrame("F0");
 			out.writeUTF(finalFrame);
+			System.out.println("Requête de déconnexion demandée, déconnexion de Sender.");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -251,7 +265,7 @@ public class Sender {
 				} else {
 					Sender sender = new Sender(machineName, portNumber, fileName, windowSize);
 					sender.run();
-					//sender.close();
+					sender.close();
 				}
 			} catch(IllegalArgumentException e) {
 				System.out.println(e);

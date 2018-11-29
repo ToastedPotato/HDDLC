@@ -79,7 +79,6 @@ absence d'erreur ou non
 										" recue, contenu du message: " + frameInfo);
 								requestNumber = (requestNumber + 1) % 8;
 								response = this.encoder.buildFrame("A" + requestNumber);
-								System.out.println(response);
 								out.writeUTF(response);
 							}
 						// Si la connexion n'avait pas été préalablement faite:
@@ -91,7 +90,7 @@ absence d'erreur ou non
 						}
 						
 					} else if(frameType == 'F'){
-						System.out.println("Demande de déconnexion reçue. Déconnexion.");
+						System.out.println("Requête de déconnexion reçue. Déconnexion de Receiver.");
 						openForReception = false;
 					}
 				}
@@ -101,6 +100,7 @@ absence d'erreur ou non
 		} 
     }
     
+    // Fermeture de Receiver
     private void close() { 
     	try {
 			this.in.close();
